@@ -11,6 +11,7 @@ const mat4 = require('gl-matrix/mat4');
  * @param {Info} infos The infos
  * @param {Tile} buffers The buffers to draw
  * @param {WebGLTexture} texure The texture
+ * @param {{up: number, right: number, zoom: number}} rotation The rotation matrix to apply
  */
 export default function Draw(ctx, infos, buffers, texure, rotation) {
   const fov = (45 * Math.PI) / 180;
@@ -34,12 +35,12 @@ export default function Draw(ctx, infos, buffers, texure, rotation) {
   mat4.translate(
     modelViewMatrix,
     modelViewMatrix,
-    [0.0, -10.0, -70.0],
+    [0.0, -10.0, -70.0 * rotation.zoom],
   );
 
-  mat4.rotate(modelViewMatrix, modelViewMatrix, -Math.PI / 3, [1, 0, 0]);
+  mat4.rotate(modelViewMatrix, modelViewMatrix, rotation.up - Math.PI / 3, [1, 0, 0]);
 
-  mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.1, [0, 0, 1]);
+  mat4.rotate(modelViewMatrix, modelViewMatrix, rotation.right * 0.1, [0, 0, 1]);
 
   // Configure shape
   {

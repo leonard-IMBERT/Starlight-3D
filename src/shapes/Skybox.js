@@ -2,6 +2,8 @@ import { InitSkyboxShader } from '../init';
 
 const mat4 = require('gl-matrix/mat4');
 
+const m4 = require('../tools/m4');
+
 export default class Skybox {
   /**
    * @param {WebGLRenderingContext} ctx The context of the skybox
@@ -91,7 +93,12 @@ export default class Skybox {
     );
   }
 
-  draw(orientation) {
+
+  /**
+   * Draw the skybox
+   * @param {{up: number, right: number, zoom: number}} rotation The rotation matrix to apply
+   */
+  draw(rotation) {
     this.ctx.useProgram(this.program);
 
     {
@@ -115,15 +122,22 @@ export default class Skybox {
     }
 
     const aspect = this.ctx.canvas.clientWidth / this.ctx.canvas.clientHeight;
-    const projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, (45 * Math.PI) / 180, aspect, 1, 2000);
+    const projectionMatrix = m4.perspective((45 * Math.PI) / 180, aspect, 1, 2000);
+    /* mat4.create();
+    mat4.perspective(projectionMatrix, (45 * Math.PI) / 180, aspect, 1, 2000); */
 
-    const camPos = [Math.cos(orientation * 0.1), 0, Math.sin(orientation * 0.1)];
+    const camPos = [
+      Math.cos(rotation.right * 0.1),
+      Math.sin(rotation.up),
+      Math.sin(rotation.right * 0.1),
+    ];
     const target = [0, 0, 0];
     const up = [0, 1, 0];
 
-    const cameraMatrix = mat4.create();
-    mat4.lookAt(cameraMatrix, camPos, target, up);
+    const cameraMatrix = m4.lookAt(camPos, target, up);
+
+    /* const cameraMatrix = mat4.create();
+    mat4.lookAt(cameraMatrix, camPos, target, up); */
 
     const viewMatrix = mat4.create();
     mat4.invert(viewMatrix, cameraMatrix);

@@ -8,11 +8,13 @@ import Map3D from './map3D';
 import Extractor from './extractor/exctrator';
 import { Clear } from './draw';
 import Skybox from './shapes/Skybox';
+import Mover from './tools/mover';
 
 const LOADER = document.getElementById('loading');
 const CANVAS = document.getElementById('drawer');
 
 if (!(CANVAS instanceof HTMLCanvasElement)) {
+  LOADER.children[0].textContent = 'There was a problem while loading the map. (canvas is missing)';
   throw new Error('Cannot found the canvas');
 }
 
@@ -22,8 +24,11 @@ CANVAS.height = CANVAS.clientHeight;
 const CTX = CANVAS.getContext('webgl');
 
 if (CTX == null || !(CTX instanceof WebGLRenderingContext)) {
+  LOADER.children[0].textContent = 'It seems your browser is not compatible with WEBGL. (CTX does not exist)';
   throw new Error('Cannot retrieve context. Maybe your browser is not compatible');
 }
+
+const mover = new Mover(CANVAS);
 
 InitContext(CTX);
 
@@ -42,29 +47,11 @@ image.decode().then(() => {
   map.initTexture(extractor)
     .then(() => {
       LOADER.style.display = 'none';
-      /* CANVAS.addEventListener('mousemove', (ev) => {
-        if (ev.buttons === 1) {
-          map.rotate(ev.movementY, ev.movementX);
-          Clear(CTX);
-          map.draw(programInfo);
-        }
-      }); */
-/*
-      Clear(CTX);
-      skybox.draw(0);
-      map.draw(programInfo);
-*/
-       let then = 0;
 
-      // Draw the scene repeatedly
-      function render(now) {
-        const Now = now * 0.001; // convert to seconds
-        const deltaTime = Now - then;
-        then = Now;
-
+      function render() {
         Clear(CTX);
-        skybox.draw(then);
-        map.draw(programInfo, -then);
+        skybox.draw(mover.getMove());
+        map.draw(programInfo, mover.getMove());
 
         requestAnimationFrame(render);
       }

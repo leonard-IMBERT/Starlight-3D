@@ -75,9 +75,6 @@ export default class Extractor {
     this.canvas.height = image.height;
     this.context = this.canvas.getContext('2d');
     this.context.drawImage(this.image, 0, 0);
-
-    console.info('extractor canvas');
-    console.info(this.canvas);
   }
 
   extract(x, y) {
