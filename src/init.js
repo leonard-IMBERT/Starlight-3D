@@ -21,7 +21,7 @@ export function InitContext(ctx) {
  * @param {number} type The shader type
  * @param {string} source The source of the shader
  */
-function loadShader(ctx, type, source) {
+export function loadShader(ctx, type, source) {
   const shader = ctx.createShader(type);
 
   ctx.shaderSource(shader, source);

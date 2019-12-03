@@ -13,6 +13,9 @@ module.exports = {
     rules: [{
       test: /\.glsl$/,
       loader: 'webpack-glsl-loader',
+    }, {
+      test: /\.worker\.js$/,
+      loader: 'worker-loader',
     }],
   },
 };

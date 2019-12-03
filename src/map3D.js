@@ -1,5 +1,6 @@
 import Tile from './shapes/Tile';
 import Draw from './draw';
+import Extractor from './extractor/extractor.worker';
 
 const metadata = require('./metadata.json');
 
@@ -28,56 +29,84 @@ export default class Map3D {
         this.tiles[row].push(new Tile(ctx, x, y, 25 - (distanceFromStar / 3), 1, 0.55));
       }
     }
+
+    this.extractor = new Extractor();
   }
 
-  initTexture(extractor) {
+  initTexture(loadingCallback) {
     return new Promise((res) => {
       this.textures = [];
+
+      this.extractor.onmessage = (message) => {
+        const {
+          x, y, data, width, height,
+        } = message.data;
+
+        const imageData = new ImageData(new Uint8ClampedArray(data), width, height);
+
+        const texture = this.ctx.createTexture();
+        this.ctx.bindTexture(this.ctx.TEXTURE_2D, texture);
+        this.ctx.texImage2D(
+          this.ctx.TEXTURE_2D,
+          0,
+          this.ctx.RGBA,
+          this.ctx.RGBA,
+          this.ctx.UNSIGNED_BYTE,
+          imageData,
+        );
+
+        // WebGL1 has different requirements for power of 2 images
+        // vs non power of 2 images so check if the image is a
+        // power of 2 in both dimensions.
+        if (imageData.width % 2 === 0 && imageData.height % 2 === 0) {
+          // Yes, it's a power of 2. Generate mips.
+          this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
+        } else {
+          // No, it's not a power of 2. Turn off mips and set
+          // wrapping to clamp to edge
+          this.ctx.texParameteri(
+            this.ctx.TEXTURE_2D,
+            this.ctx.TEXTURE_WRAP_S,
+            this.ctx.CLAMP_TO_EDGE,
+          );
+          this.ctx.texParameteri(
+            this.ctx.TEXTURE_2D,
+            this.ctx.TEXTURE_WRAP_T,
+            this.ctx.CLAMP_TO_EDGE,
+          );
+          this.ctx.texParameteri(
+            this.ctx.TEXTURE_2D,
+            this.ctx.TEXTURE_MIN_FILTER,
+            this.ctx.LINEAR,
+          );
+        }
+
+        this.textures[y][x] = texture;
+      };
+
       for (let y = 0; y < this.tiles.length; y += 1) {
         this.textures.push([]);
         for (let x = 0; x < this.tiles[y].length; x += 1) {
-          const imageData = extractor.extract(x, y);
-          const texture = this.ctx.createTexture();
-          this.ctx.bindTexture(this.ctx.TEXTURE_2D, texture);
-          this.ctx.texImage2D(
-            this.ctx.TEXTURE_2D,
-            0,
-            this.ctx.RGBA,
-            this.ctx.RGBA,
-            this.ctx.UNSIGNED_BYTE,
-            imageData,
-          );
-
-          // WebGL1 has different requirements for power of 2 images
-          // vs non power of 2 images so check if the image is a
-          // power of 2 in both dimensions.
-          if (imageData.width % 2 === 0 && imageData.height % 2 === 0) {
-            // Yes, it's a power of 2. Generate mips.
-            this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
-          } else {
-            // No, it's not a power of 2. Turn off mips and set
-            // wrapping to clamp to edge
-            this.ctx.texParameteri(
-              this.ctx.TEXTURE_2D,
-              this.ctx.TEXTURE_WRAP_S,
-              this.ctx.CLAMP_TO_EDGE,
-            );
-            this.ctx.texParameteri(
-              this.ctx.TEXTURE_2D,
-              this.ctx.TEXTURE_WRAP_T,
-              this.ctx.CLAMP_TO_EDGE,
-            );
-            this.ctx.texParameteri(
-              this.ctx.TEXTURE_2D,
-              this.ctx.TEXTURE_MIN_FILTER,
-              this.ctx.LINEAR,
-            );
-          }
-
-          this.textures[y][x] = texture;
+          this.extractor.postMessage({ x, y });
+          this.textures[y].push(null);
         }
       }
-      res();
+
+      const check = () => {
+        if (!(this.textures.every((arr) => arr.every((val) => val != null)))) {
+          const tot = this.textures.map((arr) => arr.length).reduce((a, b) => a + b);
+          const loaded = this.textures.reduce((acc, arr) => {
+            return acc + arr.reduce((c, d) => { return c + (d == null ? 0 : 1); }, 0);
+          }, 0);
+
+          loadingCallback(loaded / tot);
+          setTimeout(check, 100);
+        } else {
+          res();
+        }
+      };
+
+      setTimeout(check, 1000);
     });
   }
 

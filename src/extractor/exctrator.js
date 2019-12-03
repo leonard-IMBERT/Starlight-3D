@@ -70,6 +70,7 @@ export default class Extractor {
   constructor(image) {
     this.image = image;
 
+    // this.canvas = new OffscreenCanvas(this.image.width, this.image.height);
     this.canvas = document.createElement('canvas');
     this.canvas.width = image.width;
     this.canvas.height = image.height;
