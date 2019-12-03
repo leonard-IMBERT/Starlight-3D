@@ -3,6 +3,9 @@ export default class Tile {
    * @param {number} posX The position x of the hexagon
    * @param {number} posY The position y of the hexagon
    * @param {WebGLRenderingContext} ctx The context to render in
+   * @param {number} posZ The position z of the hexagon
+   * @param {number} height The height of the hexagon
+   * @param {size} size The radius of the hexagonal faces
    */
   constructor(ctx, posX, posY, posZ, height = 1, size = 1) {
     this.x = posX;
