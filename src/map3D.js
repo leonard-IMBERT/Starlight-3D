@@ -95,9 +95,9 @@ export default class Map3D {
       const check = () => {
         if (!(this.textures.every((arr) => arr.every((val) => val != null)))) {
           const tot = this.textures.map((arr) => arr.length).reduce((a, b) => a + b);
-          const loaded = this.textures.reduce((acc, arr) => {
-            return acc + arr.reduce((c, d) => { return c + (d == null ? 0 : 1); }, 0);
-          }, 0);
+          const loaded = this.textures.reduce(
+            (acc, arr) => acc + arr.reduce((count, image) => count + (image == null ? 0 : 1), 0), 0,
+          );
 
           loadingCallback(loaded / tot);
           setTimeout(check, 100);

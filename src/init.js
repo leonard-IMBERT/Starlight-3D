@@ -1,5 +1,5 @@
-const VERTEX_SHADER = require('./shaders/vertex.glsl');
-const FRAG_SHADER = require('./shaders/fragment.glsl');
+const VERTEX_SHADER = require('./shaders/tile/vertex.glsl');
+const FRAG_SHADER = require('./shaders/tile/fragment.glsl');
 
 const SKY_VERTEX_SHADER = require('./shaders/skybox/vertex.glsl');
 const SKY_FRAG_SHADER = require('./shaders/skybox/fragment.glsl');

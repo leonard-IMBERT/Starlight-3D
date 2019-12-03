@@ -62,25 +62,6 @@ export default function Draw(ctx, infos, buffers, texure, rotation) {
     ctx.enableVertexAttribArray(infos.attribLocations.vertexPosition);
   }
 
-  /* // Configure color
-  {
-    const numConponent = 4;
-    const type = ctx.FLOAT;
-    const normalize = false;
-    const stride = 0;
-    const offset = 0;
-    ctx.bindBuffer(ctx.ARRAY_BUFFER, buffers.colors);
-    ctx.vertexAttribPointer(
-      infos.attribLocations.vertexColor,
-      numConponent,
-      type,
-      normalize,
-      stride,
-      offset,
-    );
-    ctx.enableVertexAttribArray(infos.attribLocations.vertexColor);
-  } */
-
   // Configuring texures
   {
     const num = 2;

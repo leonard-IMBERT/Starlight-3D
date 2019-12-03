@@ -26,18 +26,12 @@ const flatMap = {
 
 const decode = async () => {
   // ========================= Load Image =====================
-  console.log('decoding');
   const image = await fetch(imageUrl);
-  console.log('image downloaded');
   const blob = await image.blob();
-  console.log('blob fetched');
   const bitmap = await createImageBitmap(blob);
-  console.log('bitmap created');
 
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  console.log('canvas created');
   const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
-  console.log('Context created');
 
   // ===================== Create webgl program ====================
 
@@ -51,8 +45,6 @@ const decode = async () => {
 
   gl.linkProgram(program);
 
-  console.log('Program linked');
-
   const buffer = {
     position: gl.createBuffer(),
     texture: gl.createTexture(),
@@ -62,12 +54,8 @@ const decode = async () => {
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatMap.position), gl.STATIC_DRAW);
 
-  console.log('buffering position');
-
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer.textureCoord);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(flatMap.textureCoord), gl.STATIC_DRAW);
-
-  console.log('buffering texcoord');
 
   gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
@@ -89,8 +77,6 @@ const decode = async () => {
     gl.LINEAR,
   );
 
-  console.log('buffering tex');
-
   const location = {
     attributes: {
       vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
@@ -104,8 +90,6 @@ const decode = async () => {
 
   const perspective = m4.orthographic(-1, 1, -1, 1, 0.1, 1000);
   const view = m4.translate(perspective, 0, 0, -1);
-
-  console.log('Program created');
 
   // =================== Initialization des attribus ==================
 
@@ -128,15 +112,9 @@ const decode = async () => {
   gl.bindTexture(gl.TEXTURE_2D, buffer.texture);
   gl.uniform1i(location.uniform.texture, 0);
 
-  console.log('Program initialized');
-
   // ============ Draw =================
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-  console.log('Bitmap drawed');
-
-  console.log('Image loaded !');
 
   return { canvas, gl };
 };

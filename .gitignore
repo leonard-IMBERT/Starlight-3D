@@ -100,4 +100,4 @@ public/
 # Compiled source
 
 dist/src.js
-dist/*.worker.js
+dist/*worker.js

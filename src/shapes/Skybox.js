@@ -123,8 +123,6 @@ export default class Skybox {
 
     const aspect = this.ctx.canvas.clientWidth / this.ctx.canvas.clientHeight;
     const projectionMatrix = m4.perspective((45 * Math.PI) / 180, aspect, 1, 2000);
-    /* mat4.create();
-    mat4.perspective(projectionMatrix, (45 * Math.PI) / 180, aspect, 1, 2000); */
 
     const camPos = [
       Math.cos(rotation.right * 0.1),
@@ -135,9 +133,6 @@ export default class Skybox {
     const up = [0, 1, 0];
 
     const cameraMatrix = m4.lookAt(camPos, target, up);
-
-    /* const cameraMatrix = mat4.create();
-    mat4.lookAt(cameraMatrix, camPos, target, up); */
 
     const viewMatrix = mat4.create();
     mat4.invert(viewMatrix, cameraMatrix);

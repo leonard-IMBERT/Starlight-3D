@@ -16,6 +16,7 @@ module.exports = {
     }, {
       test: /\.worker\.js$/,
       loader: 'worker-loader',
+      options: { name: '[name].js' },
     }],
   },
 };
