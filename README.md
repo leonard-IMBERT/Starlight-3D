@@ -21,3 +21,16 @@ npm run start
 ```
 
 The webpage is available on `localhost:3000`
+
+## Browser compatibility
+
+Minimum browser version requirement
+
+| Chrome | Firefox | Edge        | Opera |
+| ------ | ------- | ----------- | ----- |
+| 69     | 44*     |  No support | 56    |
+
+\* You need to enable the offscreencanvas experimental feature
+ > this feature is behind the gfx.offscreencanvas.enabled preference. To change preferences in Firefox, visit about:config.
+
+From https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
