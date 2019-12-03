@@ -1,21 +1,45 @@
 import { loadShader, InitContext } from '../init';
 import m4 from '../tools/m4';
 import { Clear } from '../draw';
+/**
+ * An object containing usefull data about the map
+ * @typedef {Object} Metadata
+ */
 
+/**
+ * The metadata of the map
+ * @type {Metadata}
+ */
 const metadata = require('../metadata.json');
 
 const imageUrl = '/map.png';
-
+/**
+ * @type {string} The vertex shader code
+ */
 const VERTEX_SHADER = require('../shaders/worker/workerVertex.glsl');
+/**
+ * @type {string} The fragment shader code
+ */
 const FRAGMENT_SHADER = require('../shaders/worker/workerFragment.glsl');
 
+/**
+ * Object containing informations about the vertices and the texture of the map
+ *
+ * The map is casted on a flat plane with an ismetric view
+ */
 const flatMap = {
+  /**
+   * The position of the vertices of the plane
+   */
   position: [
     -1.0, 1.0,
     1.0, 1.0,
     -1.0, -1.0,
     1.0, -1.0,
   ],
+  /**
+   * Where each vertices should be on the texture
+   */
   textureCoord: [
     0, 1,
     1, 1,
@@ -24,12 +48,16 @@ const flatMap = {
   ],
 };
 
+/**
+ * Decode and draw the map on the offscreen canvas
+ */
 const decode = async () => {
   // ========================= Load Image =====================
   const image = await fetch(imageUrl);
   const blob = await image.blob();
   const bitmap = await createImageBitmap(blob);
 
+  // Here using Offscreen canvas because web worker cannot use real canvas
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
 
@@ -61,6 +89,7 @@ const decode = async () => {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
 
 
+  // Because the map is has not dimension of power of two (512, 1024, ...) we must do this
   gl.texParameteri(
     gl.TEXTURE_2D,
     gl.TEXTURE_WRAP_S,
@@ -119,38 +148,39 @@ const decode = async () => {
   return { canvas, gl };
 };
 
+// call the decode function
 const prom = decode();
 
-const read = async (x, y) => {
-  if (x == null || y == null) {
-    throw new Error('Malformed message');
+/**
+ * Read the map for a tile
+ * @param {number} x The x coordinate of the tile
+ * @param {number} y The y coordinate of the tile
+ */
+const read = (x, y) => prom.then((cont) => {
+  const { gl } = cont;
+
+  if (y < 0 || y > 70 || x < 0 || x > metadata['row-length'][x + 1]) {
+    throw new Error('Coordinates out of bound');
   }
-  return prom.then((cont) => {
-    const { gl } = cont;
-
-    if (y < 0 || y > 70 || x < 0 || x > metadata['row-length'][x + 1]) {
-      throw new Error('coordinate out of bound');
-    }
 
 
-    const pixy = metadata['bottom-offset'] + y * metadata['vertical-step'];
-    const pixx = metadata['left-offset'][y + 1] + x * metadata['horizontal-step'];
+  const pixy = metadata['bottom-offset'] + y * metadata['vertical-step'];
+  const pixx = metadata['left-offset'][y + 1] + x * metadata['horizontal-step'];
 
+  const bufferImage = new Uint8Array(27 * 15 * 4);
 
-    /**
-     * search around the center for 15x15 and select them
-     */
+  gl.readPixels(pixx - 13, pixy - 7, 27, 15, gl.RGBA, gl.UNSIGNED_BYTE, bufferImage);
 
-    const bufferImage = new Uint8Array(27 * 15 * 4);
+  return bufferImage;
+});
 
-    gl.readPixels(pixx - 13, pixy - 7, 27, 15, gl.RGBA, gl.UNSIGNED_BYTE, bufferImage);
-
-    return bufferImage;
-  });
-};
 
 onmessage = (event) => {
   const { x, y } = event.data;
+
+  if (x == null || y == null) {
+    throw new Error('Malformed message');
+  }
 
   read(x, y).then((bufferImage) => {
     postMessage({
