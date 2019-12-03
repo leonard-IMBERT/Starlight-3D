@@ -11,15 +11,15 @@ const FRAGMENT_SHADER = require('../shaders/worker/workerFragment.glsl');
 
 const flatMap = {
   position: [
-    -1, -1,
-    -1, 1,
-    1, 1,
-    1, -1,
+    -1.0, 1.0,
+    1.0, 1.0,
+    -1.0, -1.0,
+    1.0, -1.0,
   ],
   textureCoord: [
-    0, 0,
     0, 1,
     1, 1,
+    0, 0,
     1, 0,
   ],
 };
@@ -36,7 +36,7 @@ const decode = async () => {
 
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
   console.log('canvas created');
-  const gl = canvas.getContext('webgl');
+  const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
   console.log('Context created');
 
   // ===================== Create webgl program ====================
@@ -94,7 +94,7 @@ const decode = async () => {
   const location = {
     attributes: {
       vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
-      texuturePosition: gl.getAttribLocation(program, 'aTexturePosition'),
+      texturePosition: gl.getAttribLocation(program, 'aTexturePosition'),
     },
     uniform: {
       matrix: gl.getUniformLocation(program, 'uMatrix'),
@@ -102,8 +102,8 @@ const decode = async () => {
     },
   };
 
-  const perspective = m4.perspective(45 * (Math.PI / 180), bitmap.width / bitmap.height, 0.1, 1000);
-  const view = m4.translate(perspective, 0, 0, -10);
+  const perspective = m4.orthographic(-1, 1, -1, 1, 0.1, 1000);
+  const view = m4.translate(perspective, 0, 0, -1);
 
   console.log('Program created');
 
@@ -113,12 +113,12 @@ const decode = async () => {
   Clear(gl);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer.position);
-  gl.vertexAttribPointer(location.attributes.vertexPosition, 3, gl.FLOAT, false, 0, 0);
+  gl.vertexAttribPointer(location.attributes.vertexPosition, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(location.attributes.vertexPosition);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer.textureCoord);
-  gl.vertexAttribPointer(location.attributes.texuturePosition, 2, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(location.attributes.texuturePosition);
+  gl.vertexAttribPointer(location.attributes.texturePosition, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(location.attributes.texturePosition);
 
   gl.useProgram(program);
 
@@ -143,13 +143,11 @@ const decode = async () => {
 
 const prom = decode();
 
-
-onmessage = (event) => {
-  const { x, y } = event.data;
+const read = async (x, y) => {
   if (x == null || y == null) {
     throw new Error('Malformed message');
   }
-  prom.then((cont) => {
+  return prom.then((cont) => {
     const { gl } = cont;
 
     if (y < 0 || y > 70 || x < 0 || x > metadata['row-length'][x + 1]) {
@@ -165,10 +163,18 @@ onmessage = (event) => {
      * search around the center for 15x15 and select them
      */
 
-    const bufferImage = new Uint8ClampedArray(27 * 15 * 4);
+    const bufferImage = new Uint8Array(27 * 15 * 4);
 
     gl.readPixels(pixx - 13, pixy - 7, 27, 15, gl.RGBA, gl.UNSIGNED_BYTE, bufferImage);
 
+    return bufferImage;
+  });
+};
+
+onmessage = (event) => {
+  const { x, y } = event.data;
+
+  read(x, y).then((bufferImage) => {
     postMessage({
       data: Array.from(bufferImage),
       width: 27,
