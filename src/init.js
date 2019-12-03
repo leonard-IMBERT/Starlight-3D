@@ -1,5 +1,5 @@
-const VERTEX_SHADER = require('./shaders/vertex.glsl');
-const FRAG_SHADER = require('./shaders/fragment.glsl');
+const VERTEX_SHADER = require('./shaders/tile/vertex.glsl');
+const FRAG_SHADER = require('./shaders/tile/fragment.glsl');
 
 const SKY_VERTEX_SHADER = require('./shaders/skybox/vertex.glsl');
 const SKY_FRAG_SHADER = require('./shaders/skybox/fragment.glsl');
@@ -21,7 +21,7 @@ export function InitContext(ctx) {
  * @param {number} type The shader type
  * @param {string} source The source of the shader
  */
-function loadShader(ctx, type, source) {
+export function loadShader(ctx, type, source) {
   const shader = ctx.createShader(type);
 
   ctx.shaderSource(shader, source);

@@ -3,6 +3,9 @@ export default class Tile {
    * @param {number} posX The position x of the hexagon
    * @param {number} posY The position y of the hexagon
    * @param {WebGLRenderingContext} ctx The context to render in
+   * @param {number} posZ The position z of the hexagon
+   * @param {number} height The height of the hexagon
+   * @param {size} size The radius of the hexagonal faces
    */
   constructor(ctx, posX, posY, posZ, height = 1, size = 1) {
     this.x = posX;
@@ -55,29 +58,6 @@ export default class Tile {
     ctx.bindBuffer(ctx.ARRAY_BUFFER, this.position);
     ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(positionRound), ctx.STATIC_DRAW);
 
-    /*
-    // ============ Defining colors ===========
-    const colors = [];
-
-    for (let i = 0; i < 7; i += 1) {
-      colors.push(i + 2 / 20);
-      colors.push(0);
-      colors.push(0);
-      colors.push(1.0);
-    }
-
-    for (let i = 0; i < 7; i += 1) {
-      colors.push(0);
-      colors.push(i + 2 / 20);
-      colors.push(0);
-      colors.push(1.0);
-    }
-
-    this.colors = ctx.createBuffer();
-    ctx.bindBuffer(ctx.ARRAY_BUFFER, this.colors);
-    ctx.bufferData(ctx.ARRAY_BUFFER, new Float32Array(colors), ctx.STATIC_DRAW);
-
-    */
     // ========== Defining textures ===========
     this.textures = ctx.createBuffer();
     ctx.bindBuffer(ctx.ARRAY_BUFFER, this.textures);

@@ -5,7 +5,6 @@ import {
 
 import Info from './tools/info';
 import Map3D from './map3D';
-import Extractor from './extractor/exctrator';
 import { Clear } from './draw';
 import Skybox from './shapes/Skybox';
 import Mover from './tools/mover';
@@ -43,18 +42,18 @@ const programInfo = new Info(CTX, program);
 const image = new Image();
 image.src = '/map.png';
 image.decode().then(() => {
-  const extractor = new Extractor(image);
-  map.initTexture(extractor)
-    .then(() => {
-      LOADER.style.display = 'none';
+  map.initTexture((percent) => {
+    LOADER.children.item(0).textContent = `Loading, please wait... ${Math.round(percent * 100)} %`;
+  }).then(() => {
+    LOADER.style.display = 'none';
 
-      function render() {
-        Clear(CTX);
-        skybox.draw(mover.getMove());
-        map.draw(programInfo, mover.getMove());
+    function render() {
+      Clear(CTX);
+      skybox.draw(mover.getMove());
+      map.draw(programInfo, mover.getMove());
 
-        requestAnimationFrame(render);
-      }
       requestAnimationFrame(render);
-    });
+    }
+    requestAnimationFrame(render);
+  });
 });

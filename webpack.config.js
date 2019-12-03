@@ -4,7 +4,7 @@ module.exports = {
   },
   mode: 'development',
   output: {
-    filename: 'src.js',
+    filename: '[name].js',
   },
   resolve: {
     extensions: ['.js'],
@@ -13,6 +13,10 @@ module.exports = {
     rules: [{
       test: /\.glsl$/,
       loader: 'webpack-glsl-loader',
+    }, {
+      test: /\.worker\.js$/,
+      loader: 'worker-loader',
+      options: { name: '[name].js' },
     }],
   },
 };
