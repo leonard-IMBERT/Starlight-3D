@@ -6,14 +6,6 @@ export default class Mover {
 
     this.element = div;
 
-    /**
-     * Specifically coded for a div containing the following element
-     * [ <empty>, <arrow up>, <empty>, <zoom>,
-     *   <arrow left>, <empty>, <arrow right>, <empty>,
-     *   <empty>, <arrow down>, <empty>, <dezoom>
-     * ]
-     */
-
     this.speed = 0.01;
 
     this.mov = {
@@ -22,11 +14,37 @@ export default class Mover {
       zoom: 1,
     };
 
+    this.touch = null;
+
     this.element.addEventListener('mousemove', (ev) => {
       if (ev.buttons === 1) {
         this.mov.right = this.mov.right - ev.movementX * this.speed * 10;
         this.mov.up = this.mov.up + ev.movementY * this.speed;
       }
+    });
+
+    this.element.addEventListener('touchstart', (ev) => {
+      if (ev.touches.length === 1) {
+        this.touch = ev.touches.item(0);
+      }
+    });
+
+    this.element.addEventListener('touchmove', (ev) => {
+      if (this.touch != null && ev.touches.length === 1) {
+        const newTouch = ev.touches.item(0);
+
+        const dx = newTouch.screenX - this.touch.screenX;
+        const dy = newTouch.screenY - this.touch.screenY;
+
+        this.mov.right = this.mov.right + dx * this.speed * 10;
+        this.mov.up = this.mov.up + dy * this.speed;
+
+        this.touch = newTouch;
+      }
+    });
+
+    this.element.addEventListener('touchend', () => {
+      this.touch = null;
     });
 
     this.element.addEventListener('wheel', (ev) => {
